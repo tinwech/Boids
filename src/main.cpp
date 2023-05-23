@@ -19,6 +19,9 @@ using namespace std;
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
+void mouse_callback(GLFWwindow* window, double xpos, double ypos);
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void loadMaterialLight();
 unsigned int createShader(const char* filename, const char* type);
 unsigned int createProgram(unsigned int vertexShader, unsigned int fragmentShader);
@@ -27,6 +30,10 @@ int windowWidth = 800, windowHeight = 600;
 
 // camera
 Camera camera(glm::vec3(0.0f, 0.0f, 100.0f));
+float lastX = windowWidth / 2.0f;
+float lastY = windowHeight / 2.0f;
+bool mouse_pressed = false;
+bool first_press = false;
 
 // timing
 float deltaTime = 0.0f;	
@@ -57,6 +64,9 @@ int main()
 	glfwMakeContextCurrent(window);
 	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
 	glfwSetKeyCallback(window, keyCallback);
+	glfwSetMouseButtonCallback(window, mouse_button_callback);
+	glfwSetCursorPosCallback(window, mouse_callback);
+	glfwSetScrollCallback(window, scroll_callback);
 	glfwSwapInterval(1);
 
 	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
@@ -125,6 +135,46 @@ int main()
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
+}
+
+void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
+    if(button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
+        double xpos, ypos;
+    	glfwGetCursorPos(window, &xpos, &ypos);
+	    lastX = xpos;
+		lastY = ypos;
+		mouse_pressed = true;
+		first_press = true;
+    }
+    if(button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE) {
+		mouse_pressed = false;
+    }
+}
+
+void mouse_callback(GLFWwindow* window, double xposIn, double yposIn) {
+    float xpos = static_cast<float>(xposIn);
+    float ypos = static_cast<float>(yposIn);
+
+	if (first_press) {
+        lastX = xpos;
+        lastY = ypos;
+		first_press = false;
+	}
+
+    if (mouse_pressed) {
+
+		float xoffset = xpos - lastX;
+		float yoffset = lastY - ypos; // reversed since y-coordinates go from bottom to top
+
+		lastX = xpos;
+		lastY = ypos;
+
+		camera.ProcessMouseMovement(xoffset, yoffset);
+    }
+}
+
+void scroll_callback(GLFWwindow* window, double xoffset, double yoffset) {
+    camera.ProcessMouseScroll(static_cast<float>(yoffset));
 }
 
 void framebuffer_size_callback(GLFWwindow* window, int width, int height) {
