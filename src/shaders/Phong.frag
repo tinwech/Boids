@@ -4,6 +4,7 @@ in vec2 texCoord;
 in vec4 worldPos;
 in vec3 normal;
 
+uniform vec3 color;
 uniform vec3 Ka;
 uniform vec3 Kd;
 uniform vec3 Ks;
@@ -23,7 +24,7 @@ void main()
 	vec3 R = normalize(2 * dot(L, N) * N - L);
 	vec3 V = normalize(cameraPos - worldPos.xyz);
 
-	fragColor = vec4(1.0f, 1.0f, 0.0f, 1.0f);
+	fragColor = vec4(color, 1.0f);
 
 	vec3 ambient = La * Ka * fragColor.rgb;
 	vec3 diffuse = Ld * Kd * fragColor.rgb * max(dot(L, N), 0.0f);

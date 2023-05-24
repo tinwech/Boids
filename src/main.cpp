@@ -93,7 +93,7 @@ int main()
 	// Display loop
 	while (!glfwWindowShouldClose(window))
 	{
-		glClearColor(0.1f, 0.1f, 0.1f, 0.0f);
+		glClearColor(0.2f, 0.2f, 0.2f, 0.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
 		float currentFrame = static_cast<float>(glfwGetTime());
@@ -111,6 +111,7 @@ int main()
 			glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "M"), 1, GL_FALSE, glm::value_ptr(boid->getModel()));
 			glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "V"), 1, GL_FALSE, glm::value_ptr(view));
 			glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "P"), 1, GL_FALSE, glm::value_ptr(projection));
+			glUniform3fv(glGetUniformLocation(shaderProgram, "color"), 1, glm::value_ptr(boid->color));
 			glUniform3fv(glGetUniformLocation(shaderProgram, "Ka"), 1, glm::value_ptr(material.ambient));
 			glUniform3fv(glGetUniformLocation(shaderProgram, "Kd"), 1, glm::value_ptr(material.diffuse));
 			glUniform3fv(glGetUniformLocation(shaderProgram, "Ks"), 1, glm::value_ptr(material.specular));
