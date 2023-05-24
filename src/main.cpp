@@ -82,7 +82,7 @@ int main()
 	shaderProgram = createProgram(vertexShader, fragmentShader);
 
 	// Init flock
-	Flock *flock = new Flock(5, 30, 30, 30);
+	Flock *flock = new Flock(10, 50, 50, 50);
 
 	loadMaterialLight();
 

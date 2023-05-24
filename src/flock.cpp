@@ -40,12 +40,54 @@ void Flock::checkBorder(Boid *boid) {
 
 void Flock::update() {
     for (int i = 0; i < n_boids; i++) {
-        // alignment
-        // separation
-        // cohesion
+        float n_neighbors = 0;
+        glm::vec3 s_vel = glm::vec3(0, 0, 0);
+        glm::vec3 a_vel = glm::vec3(0, 0, 0);
+        glm::vec3 c_vel = glm::vec3(0, 0, 0);
+        glm::vec3 avoid_vel = glm::vec3(0, 0, 0);
+        glm::vec3 avg_vel = glm::vec3(0, 0, 0);
+        glm::vec3 avg_pos = glm::vec3(0, 0, 0);
+        for (int j = 0; j < n_boids; j++) {
+            // boids[i]: center boid
+            // boids[j]: neighbor boid
+            if (i == j) {
+                continue;
+            }
+            glm::vec3 v = boids[j]->pos - boids[i]->pos;
+            float distance = v.length();
+            if (distance < visualRange 
+                && glm::dot(glm::normalize(boids[i]->vel), glm::normalize(v)) > -0.5) {
+                n_neighbors += 1;
+                // separation
+                avoid_vel += glm::normalize(boids[i]->pos - boids[j]->pos) / distance;
+                // alignment
+                avg_vel += boids[j]->vel;
+                // cohesion
+                avg_pos += boids[j]->pos;
+            } 
+        }
+        if (n_neighbors > 0) {
+            // separation
+            s_vel = avoid_vel / n_neighbors;
+            // alignment
+            avg_vel /= n_neighbors;
+            a_vel = avg_vel - boids[i]->vel;
+            // cohesion
+            avg_pos /= n_neighbors;
+            c_vel = avg_pos - boids[i]->pos;
+        }
+        boids[i]->vel += separation * s_vel + alignment * a_vel + cohesion * c_vel;
+
         // check border
         checkBorder(boids[i]);
+
         // update vel and pos
+        if (boids[i]->vel.length() < minSpeed) {
+            boids[i]->vel = glm::normalize(boids[i]->vel) * minSpeed;
+        }
+        else if (boids[i]->vel.length() > maxSpeed) {
+            boids[i]->vel = glm::normalize(boids[i]->vel) * maxSpeed;
+        }
         boids[i]->pos += dt * boids[i]->vel;
     }
 }
