@@ -4,13 +4,13 @@
 Boid::Boid() {
     createVAO();    
     pos = glm::vec3(0.0f, 0.0f, 0.0f);
-    vel = glm::vec3(0.5f, 1.0f, 0.0f);
+    vel = glm::vec3(2.0f, 3.0f, 1.0f);
 }
 
 Boid::Boid(float x, float y, float z) {
 	createVAO();
 	pos = glm::vec3(x, y, z);
-    vel = glm::vec3(0.5f, 1.0f, 0.0f);
+    vel = glm::vec3(2.0f, 3.0f, 1.0f);
 }
 
 Boid::~Boid() {
@@ -20,11 +20,13 @@ Boid::~Boid() {
 
 glm::mat4 Boid::getModel() {
 	glm::mat4 model = glm::mat4(1.0f);
+	// translation
 	model = glm::translate(model, pos);
-	// initial orientation (0, 1, 0) should be aligned with vel
-	// axis: cross(vel, (0, 1, 0))
-	// angle:  
-	// model = glm::rotate(model, angle, axis);
+	// rotation
+	glm::vec3 dir = glm::vec3(0, 1, 0);
+	glm::vec3 axis = glm::cross(dir, vel);
+	float angle = glm::acos(glm::dot(glm::normalize(dir), glm::normalize(vel)));
+	model = glm::rotate(model, angle, axis);
 	return model;
 }
 
