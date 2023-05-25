@@ -14,6 +14,7 @@
 
 #include "boid.h"
 #include "flock.h"
+#include "arena.h"
 
 using namespace std;
 
@@ -29,7 +30,7 @@ unsigned int createProgram(unsigned int vertexShader, unsigned int fragmentShade
 int windowWidth = 800, windowHeight = 600;
 
 // camera
-Camera camera(glm::vec3(0.0f, 0.0f, 100.0f));
+Camera camera(glm::vec3(80.0f, 0.0f, 80.0f));
 float lastX = windowWidth / 2.0f;
 float lastY = windowHeight / 2.0f;
 bool mouse_pressed = false;
@@ -81,8 +82,14 @@ int main()
 	fragmentShader = createShader("../src/shaders/Phong.frag", "frag");
 	shaderProgram = createProgram(vertexShader, fragmentShader);
 
+	// Init arena
+	Arena *arena = new Arena(60, 60, 60);
+
 	// Init flock
-	Flock *flock = new Flock(10, 50, 50, 50);
+	Flock *flock = new Flock(30,
+							arena->x_size - 10,
+							arena->y_size - 10,
+							arena->z_size - 10);
 
 	loadMaterialLight();
 
@@ -90,6 +97,7 @@ int main()
 	glViewport(0, 0, windowWidth, windowHeight);
 	glEnable(GL_DEPTH_TEST);
 	glDepthFunc(GL_LEQUAL);
+	glEnable(GL_CULL_FACE); 
 	// Display loop
 	while (!glfwWindowShouldClose(window))
 	{
@@ -106,6 +114,7 @@ int main()
         glm::mat4 view = camera.GetViewMatrix();
 
 		// Draw the model
+		glCullFace(GL_BACK);
 		for (Boid *boid : flock->boids) {
 			glUseProgram(shaderProgram);
 			glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "M"), 1, GL_FALSE, glm::value_ptr(boid->getModel()));
@@ -121,9 +130,17 @@ int main()
 			glUniform3fv(glGetUniformLocation(shaderProgram, "Ls"), 1, glm::value_ptr(light.specular));
 			glUniform3fv(glGetUniformLocation(shaderProgram, "lightPos"), 1, glm::value_ptr(light.position));
 			glUniform3fv(glGetUniformLocation(shaderProgram, "cameraPos"), 1, glm::value_ptr(camera.Position));
+			glUniform1f(glGetUniformLocation(shaderProgram, "revertNormal"), 1);
 			glBindVertexArray(boid->VAO);
 			glDrawArrays(GL_TRIANGLES, 0, 18);
 		}
+
+		glCullFace(GL_FRONT);
+		glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "M"), 1, GL_FALSE, glm::value_ptr(arena->getModel()));
+		glUniform3fv(glGetUniformLocation(shaderProgram, "color"), 1, glm::value_ptr(arena->color));
+		glUniform1f(glGetUniformLocation(shaderProgram, "revertNormal"), -1);
+		glBindVertexArray(arena->VAO);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
@@ -274,5 +291,5 @@ void loadMaterialLight() {
 	light.ambient = glm::vec3(0.2, 0.2, 0.2);
 	light.diffuse = glm::vec3(0.8, 0.8, 0.8);
 	light.specular = glm::vec3(0.5, 0.5, 0.5);
-	light.position = glm::vec3(100, 100, 100);
+	light.position = glm::vec3(80, 100, 60);
 }

@@ -1,13 +1,14 @@
 #include "flock.h"
 #include <iostream>
 
-Flock::Flock(int n_boids, float sx, float sy, float sz) : n_boids(n_boids) {
-    x_min = -sx / 2;
-    x_max = sx / 2;
-    y_min = -sy / 2;
-    y_max = sy / 2;
-    z_min = -sz / 2;
-    z_max = sz / 2;
+Flock::Flock(int n_boids, float sx, float sy, float sz) : 
+    n_boids(n_boids),
+    x_min(-sx / 2),
+    x_max(sx / 2),
+    y_min(-sy / 2),
+    y_max(sy / 2),
+    z_min(-sz / 2),
+    z_max(sz / 2) {
     boids.reserve(n_boids);
     for (int i = 0; i < n_boids; i++) {
         float x = rand() % (int)sx - sx / 2;

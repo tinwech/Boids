@@ -19,7 +19,6 @@ class Boid {
     glm::vec3 pos;
     glm::vec3 vel;
     glm::vec3 color = glm::vec3(1.0f, 1.0f, 0.0f);
-    glm::mat4 model = glm::mat4(1.0f);
 };
 
 #endif
