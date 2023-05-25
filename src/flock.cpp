@@ -39,7 +39,7 @@ void Flock::checkBorder(Boid *boid) {
     }
 }
 
-void Flock::update() {
+void Flock::update(float deltaTime) {
     for (int i = 0; i < n_boids; i++) {
         float n_neighbors = 0;
         glm::vec3 s_vel = glm::vec3(0, 0, 0);
@@ -89,6 +89,6 @@ void Flock::update() {
         else if (boids[i]->vel.length() > maxSpeed) {
             boids[i]->vel = glm::normalize(boids[i]->vel) * maxSpeed;
         }
-        boids[i]->pos += dt * boids[i]->vel;
+        boids[i]->pos += deltaTime * boids[i]->vel;
     }
 }

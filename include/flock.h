@@ -5,7 +5,7 @@ class Flock {
     public:
     Flock(int n_boids, float sx, float sy, float sz);
     void checkBorder(Boid *boid);
-    void update();
+    void update(float deltaTime);
 
     float separation = 10;
     float alignment = 0.5;

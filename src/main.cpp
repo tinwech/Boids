@@ -108,7 +108,7 @@ int main()
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
-		flock->update();
+		flock->update(deltaTime);
 
 		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)windowWidth / (float)windowHeight, 0.1f, 200.0f);
         glm::mat4 view = camera.GetViewMatrix();
