@@ -15,6 +15,7 @@
 #include "boid.h"
 #include "flock.h"
 #include "arena.h"
+#include "prey.h"
 
 using namespace std;
 
@@ -83,13 +84,13 @@ int main()
 	shaderProgram = createProgram(vertexShader, fragmentShader);
 
 	// Init arena
-	Arena *arena = new Arena(60, 60, 60);
+	Arena *arena = new Arena(60, 40, 60);
 
 	// Init flock
-	Flock *flock = new Flock(30,
-							arena->x_size - 10,
-							arena->y_size - 10,
-							arena->z_size - 10);
+	Flock *flock = new Flock(30, arena->x_size, arena->y_size, arena->z_size);
+	
+	// Init prey
+	Prey *prey = new Prey(1, arena->x_size, arena->y_size, arena->z_size);
 
 	loadMaterialLight();
 
@@ -108,12 +109,13 @@ int main()
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
 
-		flock->update(deltaTime);
+		flock->update(deltaTime, prey);
+		prey->update();
 
 		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)windowWidth / (float)windowHeight, 0.1f, 200.0f);
         glm::mat4 view = camera.GetViewMatrix();
 
-		// Draw the model
+		// Draw boids
 		glCullFace(GL_BACK);
 		for (Boid *boid : flock->boids) {
 			glUseProgram(shaderProgram);
@@ -135,6 +137,14 @@ int main()
 			glDrawArrays(GL_TRIANGLES, 0, 18);
 		}
 
+		// Draw prey
+		glCullFace(GL_BACK);
+		glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "M"), 1, GL_FALSE, glm::value_ptr(prey->getModel()));
+		glUniform3fv(glGetUniformLocation(shaderProgram, "color"), 1, glm::value_ptr(prey->color));
+		glBindVertexArray(prey->VAO);
+		glDrawArrays(GL_TRIANGLES, 0, 36);
+
+		// Draw arena
 		glCullFace(GL_FRONT);
 		glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "M"), 1, GL_FALSE, glm::value_ptr(arena->getModel()));
 		glUniform3fv(glGetUniformLocation(shaderProgram, "color"), 1, glm::value_ptr(arena->color));

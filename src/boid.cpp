@@ -4,13 +4,13 @@
 Boid::Boid() {
     createVAO();    
     pos = glm::vec3(0.0f, 0.0f, 0.0f);
-    vel = glm::vec3(1.0f, 0.0f, 0.0f);
+    vel = glm::vec3(rand(), rand(), rand());
 }
 
 Boid::Boid(float x, float y, float z) {
 	createVAO();
 	pos = glm::vec3(x, y, z);
-    vel = glm::vec3(1.0f, 0.0f, 0.0f);
+    vel = glm::vec3(rand(), rand(), rand());
 }
 
 Boid::~Boid() {

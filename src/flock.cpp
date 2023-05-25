@@ -39,7 +39,7 @@ void Flock::checkBorder(Boid *boid) {
     }
 }
 
-void Flock::update(float deltaTime) {
+void Flock::update(float deltaTime, Prey *prey) {
     for (int i = 0; i < n_boids; i++) {
         float n_neighbors = 0;
         glm::vec3 s_vel = glm::vec3(0, 0, 0);
@@ -55,7 +55,7 @@ void Flock::update(float deltaTime) {
                 continue;
             }
             glm::vec3 v = boids[j]->pos - boids[i]->pos;
-            float distance = v.length();
+            float distance = glm::length(v);
             if (distance < visualRange 
                 && glm::dot(glm::normalize(boids[i]->vel), glm::normalize(v)) > -0.5) {
                 n_neighbors += 1;
@@ -77,16 +77,27 @@ void Flock::update(float deltaTime) {
             avg_pos /= n_neighbors;
             c_vel = avg_pos - boids[i]->pos;
         }
+
         boids[i]->vel += separation * s_vel + alignment * a_vel + cohesion * c_vel;
+
+        // chase prey
+        if (prey->alive) {
+            glm::vec3 v = prey->pos - boids[i]->pos;
+            float distance = glm::length(v);
+            if (distance < 3) {
+                prey->alive = false;
+            }
+            boids[i]->vel += chasefactor * glm::normalize(v) / distance;
+        }
 
         // check border
         checkBorder(boids[i]);
 
         // update vel and pos
-        if (boids[i]->vel.length() < minSpeed) {
+        if (glm::length(boids[i]->vel) < minSpeed) {
             boids[i]->vel = glm::normalize(boids[i]->vel) * minSpeed;
         }
-        else if (boids[i]->vel.length() > maxSpeed) {
+        else if (glm::length(boids[i]->vel) > maxSpeed) {
             boids[i]->vel = glm::normalize(boids[i]->vel) * maxSpeed;
         }
         boids[i]->pos += deltaTime * boids[i]->vel;

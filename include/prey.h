@@ -1,23 +1,43 @@
-#ifndef ARENA_H
-#define ARENA_H
+#ifndef PREY_H
+#define PREY_H
 
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include <iostream>
 
-class Arena {
+class Prey {
     public:
-    Arena(float x_size, float y_size, float z_size) : 
-        x_size(x_size),
-        y_size(y_size),
-        z_size(z_size) {
+    Prey(float scale, float sx, float sy, float sz) :
+        alive(false),
+        scale(scale),
+        x_min(-sx / 2),
+        x_max(sx / 2),
+        y_min(-sy / 2),
+        y_max(sy / 2),
+        z_min(-sz / 2),
+        z_max(sz / 2) {
         createVAO();
+        update();
     }
-    ~Arena() {
+    ~Prey() {
         glDeleteVertexArrays(1, &VAO);
         glDeleteBuffers(1, &VBO);
+    }
+
+    void update() {
+        if (!alive) {
+            alive = true;
+            float sx = x_max - x_min;
+            float sy = y_max - y_min;
+            float sz = z_max - z_min;
+            float x = rand() % (int)sx - sx / 2;
+            float y = rand() % (int)sy - sy / 2;
+            float z = rand() % (int)sz - sz / 2;
+            pos = glm::vec3(x, y, z);
+        }
     }
 
     void createVAO() {
@@ -58,11 +78,11 @@ class Arena {
             -0.5f, -0.5f, -0.5f,  0.0f, -1.0f,  0.0f,
 
             -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
+            0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
             0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
-            0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-            0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
+            -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f,
             -0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
-            -0.5f,  0.5f, -0.5f,  0.0f,  1.0f,  0.0f
+            0.5f,  0.5f,  0.5f,  0.0f,  1.0f,  0.0f,
         };
         glGenVertexArrays(1, &VAO);
         glGenBuffers(1, &VBO);
@@ -79,13 +99,19 @@ class Arena {
 
     glm::mat4 getModel() {
         glm::mat4 model = glm::mat4(1.0f);
-        model = glm::scale(model, glm::vec3(x_size + 10, y_size + 10, z_size + 10)); 
+        model = glm::translate(model, pos);
+        model = glm::scale(model, glm::vec3(scale, scale, scale)); 
         return model;
     }
 
     unsigned int VAO, VBO;
-    float x_size, y_size, z_size;
-    glm::vec3 color = glm::vec3(0.8f, 0.8f, 0.8f);
+    bool alive;
+    float scale;
+    float x_min, x_max;
+    float y_min, y_max;
+    float z_min, z_max;
+    glm::vec3 pos;
+    glm::vec3 color = glm::vec3(0.0f, 1.0f, 1.0f);
 };
 
 #endif
