@@ -65,7 +65,7 @@ int main()
 	shaderProgram = createProgram(vertexShader, fragmentShader);
 
 	// Init arena
-	Arena *arena = new Arena(60, 40, 60);
+	Arena *arena = new Arena(60, 40, 60, false);
 
 	// Init flock
 	Flock *flock = new Flock(30, arena->x_size, arena->y_size, arena->z_size);
@@ -119,12 +119,14 @@ int main()
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		// Draw arena
-		glCullFace(GL_FRONT);
-		glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "M"), 1, GL_FALSE, glm::value_ptr(arena->getModel()));
-		glUniform3fv(glGetUniformLocation(shaderProgram, "color"), 1, glm::value_ptr(arena->color));
-		glUniform1f(glGetUniformLocation(shaderProgram, "revertNormal"), -1);
-		glBindVertexArray(arena->VAO);
-		glDrawArrays(GL_TRIANGLES, 0, 36);
+		if (arena->visualize) {
+			glCullFace(GL_FRONT);
+			glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "M"), 1, GL_FALSE, glm::value_ptr(arena->getModel()));
+			glUniform3fv(glGetUniformLocation(shaderProgram, "color"), 1, glm::value_ptr(arena->color));
+			glUniform1f(glGetUniformLocation(shaderProgram, "revertNormal"), -1);
+			glBindVertexArray(arena->VAO);
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+		}
 
 		// render GUI
 		renderUI(window, arena, flock, prey);
@@ -156,6 +158,10 @@ void mainPanel(Arena* arena, Flock* flock, Prey* prey) {
         ImGui::SliderFloat("x", &prey->pos[0], flock->x_min, flock->x_max);
         ImGui::SliderFloat("y", &prey->pos[1], flock->y_min, flock->y_max);
         ImGui::SliderFloat("z", &prey->pos[2], flock->z_min, flock->z_max);
+
+		// Arena
+        ImGui::Text("Arena");
+		ImGui::Checkbox("Visualize", &arena->visualize);
     }
     ImGui::End();
 }

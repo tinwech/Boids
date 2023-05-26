@@ -9,10 +9,11 @@
 
 class Arena {
     public:
-    Arena(float x_size, float y_size, float z_size) : 
+    Arena(float x_size, float y_size, float z_size, bool visualize) : 
         x_size(x_size),
         y_size(y_size),
-        z_size(z_size) {
+        z_size(z_size),
+        visualize(visualize) {
         createVAO();
     }
     ~Arena() {
@@ -85,6 +86,7 @@ class Arena {
 
     unsigned int VAO, VBO;
     float x_size, y_size, z_size;
+    bool visualize;
     glm::vec3 color = glm::vec3(0.8f, 0.8f, 0.8f);
 };
 
