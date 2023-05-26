@@ -6,6 +6,9 @@
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 #include <glm/gtc/type_ptr.hpp>
+#include "imgui/imgui.h"
+#include "imgui/imgui_impl_glfw.h"
+#include "imgui/imgui_impl_opengl3.h"
 #include "object.h"
 #include "camera.h"
 
@@ -19,6 +22,7 @@
 
 using namespace std;
 
+GLFWwindow* init();
 void framebuffer_size_callback(GLFWwindow* window, int width, int height);
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods);
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods);
@@ -27,6 +31,8 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void loadMaterialLight();
 unsigned int createShader(const char* filename, const char* type);
 unsigned int createProgram(unsigned int vertexShader, unsigned int fragmentShader);
+void mainPanel(Arena* arena, Flock* flock, Prey* prey);
+void renderUI(GLFWwindow* window, Arena* arena, Flock* flock, Prey* prey);
 
 int windowWidth = 800, windowHeight = 600;
 
@@ -47,35 +53,10 @@ Light light;
 int main()
 {
 	// Initialization
-	glfwInit();
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
-	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
-	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+	GLFWwindow* window = init();
 
-#ifdef __APPLE__
-	glfwWindowHint(GLFE_OPENGL_FORWARD_COMPACT, GL_TRUE);
-#endif
-
-	GLFWwindow* window = glfwCreateWindow(windowWidth, windowHeight, "Boids Simulation", NULL, NULL);
-	if (window == NULL)
-	{
-		std::cout << "Failed to create GLFW window" << std::endl;
-		glfwTerminate();
-		return -1;
-	}
-	glfwMakeContextCurrent(window);
-	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
-	glfwSetKeyCallback(window, keyCallback);
-	glfwSetMouseButtonCallback(window, mouse_button_callback);
-	glfwSetCursorPosCallback(window, mouse_callback);
-	glfwSetScrollCallback(window, scroll_callback);
-	glfwSwapInterval(1);
-
-	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
-	{
-		std::cout << "Failed to initialize GLAD" << std::endl;
-		return -1;
-	}
+	// load material and light param
+	loadMaterialLight();
 
 	// Create shaders
 	unsigned int vertexShader, fragmentShader, shaderProgram;
@@ -92,13 +73,6 @@ int main()
 	// Init prey
 	Prey *prey = new Prey(1, arena->x_size, arena->y_size, arena->z_size);
 
-	loadMaterialLight();
-
-	glfwGetFramebufferSize(window, &windowWidth, &windowHeight);
-	glViewport(0, 0, windowWidth, windowHeight);
-	glEnable(GL_DEPTH_TEST);
-	glDepthFunc(GL_LEQUAL);
-	glEnable(GL_CULL_FACE); 
 	// Display loop
 	while (!glfwWindowShouldClose(window))
 	{
@@ -152,6 +126,9 @@ int main()
 		glBindVertexArray(arena->VAO);
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
+		// render GUI
+		renderUI(window, arena, flock, prey);
+
 		glfwSwapBuffers(window);
 		glfwPollEvents();
 	}
@@ -160,13 +137,96 @@ int main()
 	return 0;
 }
 
+void mainPanel(Arena* arena, Flock* flock, Prey* prey) {
+    ImGui::SetNextWindowSize(ImVec2(300.0f, 250.0f), ImGuiCond_Once);
+    ImGui::SetNextWindowCollapsed(0, ImGuiCond_Once);
+    ImGui::SetNextWindowPos(ImVec2(10.0f, 340.0f), ImGuiCond_Once);
+    ImGui::SetNextWindowBgAlpha(0.2f);
+    if (ImGui::Begin("Control")) {
+        if (ImGui::Button("Reset")) {
+        }
+		// Boids parameters
+        ImGui::Text("Boids");
+        ImGui::SliderFloat("Separation", &flock->separation, 0.0f, 20.0f);
+        ImGui::SliderFloat("Alignment", &flock->alignment, 0.0f, 3.0f);
+        ImGui::SliderFloat("Cohesion", &flock->cohesion, 0.0f, 3.0f);
+        ImGui::SliderFloat("Visual Range", &flock->visualRange, 1.0f, 20.0f);
+
+		// Prey parameters
+        ImGui::Text("Prey");
+        ImGui::SliderFloat("x", &prey->pos[0], flock->x_min, flock->x_max);
+        ImGui::SliderFloat("y", &prey->pos[1], flock->y_min, flock->y_max);
+        ImGui::SliderFloat("z", &prey->pos[2], flock->z_min, flock->z_max);
+    }
+    ImGui::End();
+}
+
+void renderUI(GLFWwindow* window, Arena* arena, Flock* flock, Prey* prey) {
+    ImGui_ImplOpenGL3_NewFrame();
+    ImGui_ImplGlfw_NewFrame();
+    ImGui::NewFrame();
+    mainPanel(arena, flock, prey);
+    ImGui::Render();
+    ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
+}
+
+GLFWwindow* init() {
+	// Init GLFW
+	glfwInit();
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MAJOR, 3);
+	glfwWindowHint(GLFW_CONTEXT_VERSION_MINOR, 3);
+	glfwWindowHint(GLFW_OPENGL_PROFILE, GLFW_OPENGL_CORE_PROFILE);
+
+#ifdef __APPLE__
+	glfwWindowHint(GLFE_OPENGL_FORWARD_COMPACT, GL_TRUE);
+#endif
+
+	GLFWwindow* window = glfwCreateWindow(windowWidth, windowHeight, "Boids Simulation", NULL, NULL);
+	if (window == NULL)
+	{
+		std::cout << "Failed to create GLFW window" << std::endl;
+		glfwTerminate();
+		exit(1);
+	}
+	glfwMakeContextCurrent(window);
+	glfwSetFramebufferSizeCallback(window, framebuffer_size_callback);
+	glfwSetKeyCallback(window, keyCallback);
+	glfwSetMouseButtonCallback(window, mouse_button_callback);
+	glfwSetCursorPosCallback(window, mouse_callback);
+	// glfwSetScrollCallback(window, scroll_callback);
+	glfwSwapInterval(1);
+
+	// Init GLAD
+	if (!gladLoadGLLoader((GLADloadproc)glfwGetProcAddress))
+	{
+		std::cout << "Failed to initialize GLAD" << std::endl;
+		exit(1);
+	}
+
+	// Setup OpenGL
+	glfwGetFramebufferSize(window, &windowWidth, &windowHeight);
+	glViewport(0, 0, windowWidth, windowHeight);
+	glEnable(GL_DEPTH_TEST);
+	glDepthFunc(GL_LEQUAL);
+	glEnable(GL_CULL_FACE); 
+
+	// Init GUI
+	IMGUI_CHECKVERSION();
+	ImGui::CreateContext();
+	ImGui::StyleColorsDark();
+	ImGui_ImplGlfw_InitForOpenGL(window, true);
+	ImGui_ImplOpenGL3_Init("#version 330");
+
+	return window;
+}
+
 void keyCallback(GLFWwindow* window, int key, int scancode, int action, int mods) {
 	if (key == GLFW_KEY_ESCAPE && action == GLFW_PRESS)
 		glfwSetWindowShouldClose(window, true);
 }
 
 void mouse_button_callback(GLFWwindow* window, int button, int action, int mods) {
-    if(button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_PRESS) {
+    if(button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_PRESS) {
         double xpos, ypos;
     	glfwGetCursorPos(window, &xpos, &ypos);
 	    lastX = xpos;
@@ -174,7 +234,7 @@ void mouse_button_callback(GLFWwindow* window, int button, int action, int mods)
 		mouse_pressed = true;
 		first_press = true;
     }
-    if(button == GLFW_MOUSE_BUTTON_LEFT && action == GLFW_RELEASE) {
+    if(button == GLFW_MOUSE_BUTTON_RIGHT && action == GLFW_RELEASE) {
 		mouse_pressed = false;
     }
 }

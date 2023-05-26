@@ -79,7 +79,7 @@ class Arena {
 
     glm::mat4 getModel() {
         glm::mat4 model = glm::mat4(1.0f);
-        model = glm::scale(model, glm::vec3(x_size + 10, y_size + 10, z_size + 10)); 
+        model = glm::scale(model, glm::vec3(x_size + 20, y_size + 20, z_size + 20)); 
         return model;
     }
 
