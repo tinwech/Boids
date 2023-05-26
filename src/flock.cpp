@@ -81,7 +81,7 @@ void Flock::update(float deltaTime, Prey *prey) {
         boids[i]->vel += separation * s_vel + alignment * a_vel + cohesion * c_vel;
 
         // chase prey
-        if (prey->alive) {
+        if (prey->alive || prey->immortal) {
             glm::vec3 v = prey->pos - boids[i]->pos;
             float distance = glm::length(v);
             if (distance < 3) {

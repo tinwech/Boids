@@ -143,8 +143,6 @@ void mainPanel(Arena* arena, Flock* flock, Prey* prey) {
     ImGui::SetNextWindowPos(ImVec2(10.0f, 340.0f), ImGuiCond_Once);
     ImGui::SetNextWindowBgAlpha(0.2f);
     if (ImGui::Begin("Control")) {
-        if (ImGui::Button("Reset")) {
-        }
 		// Boids parameters
         ImGui::Text("Boids");
         ImGui::SliderFloat("Separation", &flock->separation, 0.0f, 20.0f);
@@ -154,6 +152,7 @@ void mainPanel(Arena* arena, Flock* flock, Prey* prey) {
 
 		// Prey parameters
         ImGui::Text("Prey");
+		ImGui::Checkbox("Immortal", &prey->immortal);
         ImGui::SliderFloat("x", &prey->pos[0], flock->x_min, flock->x_max);
         ImGui::SliderFloat("y", &prey->pos[1], flock->y_min, flock->y_max);
         ImGui::SliderFloat("z", &prey->pos[2], flock->z_min, flock->z_max);

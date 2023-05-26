@@ -12,6 +12,7 @@ class Prey {
     public:
     Prey(float scale, float sx, float sy, float sz) :
         alive(false),
+        immortal(false),
         scale(scale),
         x_min(-sx / 2),
         x_max(sx / 2),
@@ -28,7 +29,7 @@ class Prey {
     }
 
     void update() {
-        if (!alive) {
+        if (!alive && !immortal) {
             alive = true;
             float sx = x_max - x_min;
             float sy = y_max - y_min;
@@ -106,6 +107,7 @@ class Prey {
 
     unsigned int VAO, VBO;
     bool alive;
+    bool immortal;
     float scale;
     float x_min, x_max;
     float y_min, y_max;
