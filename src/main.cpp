@@ -31,8 +31,8 @@ void scroll_callback(GLFWwindow* window, double xoffset, double yoffset);
 void loadMaterialLight();
 unsigned int createShader(const char* filename, const char* type);
 unsigned int createProgram(unsigned int vertexShader, unsigned int fragmentShader);
-void mainPanel(Arena* arena, Flock* flock, Prey* prey);
-void renderUI(GLFWwindow* window, Arena* arena, Flock* flock, Prey* prey);
+void mainPanel(float fps, Arena* arena, Flock* flock, Prey* prey);
+void renderUI(GLFWwindow* window, float fps, Arena* arena, Flock* flock, Prey* prey);
 
 int windowWidth = 800, windowHeight = 600;
 
@@ -82,6 +82,7 @@ int main()
 		float currentFrame = static_cast<float>(glfwGetTime());
         deltaTime = currentFrame - lastFrame;
         lastFrame = currentFrame;
+		float fps = 1.0f / deltaTime;
 
 		flock->update(deltaTime, prey);
 		prey->update();
@@ -129,7 +130,7 @@ int main()
 		}
 
 		// render GUI
-		renderUI(window, arena, flock, prey);
+		renderUI(window, fps, arena, flock, prey);
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
@@ -139,12 +140,15 @@ int main()
 	return 0;
 }
 
-void mainPanel(Arena* arena, Flock* flock, Prey* prey) {
+void mainPanel(float fps, Arena* arena, Flock* flock, Prey* prey) {
     ImGui::SetNextWindowSize(ImVec2(300.0f, 250.0f), ImGuiCond_Once);
     ImGui::SetNextWindowCollapsed(0, ImGuiCond_Once);
     ImGui::SetNextWindowPos(ImVec2(10.0f, 340.0f), ImGuiCond_Once);
     ImGui::SetNextWindowBgAlpha(0.2f);
     if (ImGui::Begin("Control")) {
+		// Statistics
+        ImGui::Text("FPS: %f", fps);
+
 		// Boids parameters
         ImGui::Text("Boids");
         ImGui::SliderFloat("Separation", &flock->separation, 0.0f, 20.0f);
@@ -166,11 +170,11 @@ void mainPanel(Arena* arena, Flock* flock, Prey* prey) {
     ImGui::End();
 }
 
-void renderUI(GLFWwindow* window, Arena* arena, Flock* flock, Prey* prey) {
+void renderUI(GLFWwindow* window, float fps, Arena* arena, Flock* flock, Prey* prey) {
     ImGui_ImplOpenGL3_NewFrame();
     ImGui_ImplGlfw_NewFrame();
     ImGui::NewFrame();
-    mainPanel(arena, flock, prey);
+    mainPanel(fps, arena, flock, prey);
     ImGui::Render();
     ImGui_ImplOpenGL3_RenderDrawData(ImGui::GetDrawData());
 }
