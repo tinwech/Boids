@@ -50,14 +50,35 @@ void Flock::chasePrey(Boid* boid, Prey* prey) {
     }
 }
 
-bool Flock::visible(Boid *b1, Boid *b2) {
-    // return if b1 can see b2
-    glm::vec3 v = b2->pos - b1->pos;
-    return glm::length(v) < visualRange 
-        && glm::dot(glm::normalize(b1->vel), glm::normalize(v)) > glm::cos(glm::radians(fov / 2.0f));
+void Flock::avoidObstacles(Boid *boid, std::vector<Obstacle*> &obstacles) {
+    glm::vec3 avoid_vel = glm::vec3(0.0f, 0.0f, 0.0f);
+    float n_visible = 0;
+    for (Obstacle *obstacle : obstacles) {
+        if (visible(boid, obstacle)) {
+            n_visible += 1;
+            float distance = glm::length(boid->pos - obstacle->pos);
+            avoid_vel += glm::normalize(boid->pos - obstacle->pos) / distance;
+        }
+    }
+    if (n_visible > 0) {
+        avoid_vel /= n_visible;
+    }
+    boid->vel += avoidfactor * avoid_vel;
 }
 
-void Flock::update(float deltaTime, Prey *prey) {
+bool Flock::visible(Boid *boid, Obstacle *obstacle) {
+    glm::vec3 v = obstacle->pos - boid->pos;
+    return glm::length(v) - obstacle->size / 2 < visualRange 
+        && glm::dot(glm::normalize(boid->vel), glm::normalize(v)) > glm::cos(glm::radians(fov / 2.0f));
+}
+
+bool Flock::visible(Boid *boid, Boid *neighbor) {
+    glm::vec3 v = neighbor->pos - boid->pos;
+    return glm::length(v) < visualRange 
+        && glm::dot(glm::normalize(boid->vel), glm::normalize(v)) > glm::cos(glm::radians(fov / 2.0f));
+}
+
+void Flock::update(float deltaTime, Prey *prey, std::vector<Obstacle*> &obstacles) {
     for (int i = 0; i < n_boids; i++) {
         float n_neighbors = 0;
         glm::vec3 s_vel = glm::vec3(0, 0, 0);
@@ -95,6 +116,9 @@ void Flock::update(float deltaTime, Prey *prey) {
 
         // chase prey
         chasePrey(boids[i], prey);
+
+        // avoid obstacles
+        avoidObstacles(boids[i], obstacles);
 
         // check border
         checkBorder(boids[i]);

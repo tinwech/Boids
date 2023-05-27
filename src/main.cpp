@@ -84,7 +84,7 @@ int main()
         lastFrame = currentFrame;
 		float fps = 1.0f / deltaTime;
 
-		flock->update(deltaTime, prey);
+		flock->update(deltaTime, prey, arena->obstacles);
 		prey->update();
 
 		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)windowWidth / (float)windowHeight, 0.1f, 200.0f);
@@ -120,6 +120,13 @@ int main()
 		glDrawArrays(GL_TRIANGLES, 0, 36);
 
 		// Draw arena
+		for (Obstacle *obstacle : arena->obstacles) {
+			glCullFace(GL_BACK);
+			glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "M"), 1, GL_FALSE, glm::value_ptr(obstacle->getModel()));
+			glUniform3fv(glGetUniformLocation(shaderProgram, "color"), 1, glm::value_ptr(obstacle->color));
+			glBindVertexArray(prey->VAO);
+			glDrawArrays(GL_TRIANGLES, 0, 36);
+		}
 		if (arena->visualize) {
 			glCullFace(GL_FRONT);
 			glUniformMatrix4fv(glGetUniformLocation(shaderProgram, "M"), 1, GL_FALSE, glm::value_ptr(arena->getModel()));
@@ -152,8 +159,8 @@ void mainPanel(float fps, Arena* arena, Flock* flock, Prey* prey) {
 		// Boids parameters
         ImGui::Text("Boids");
         ImGui::SliderFloat("Separation", &flock->separation, 0.0f, 20.0f);
-        ImGui::SliderFloat("Alignment", &flock->alignment, 0.0f, 3.0f);
-        ImGui::SliderFloat("Cohesion", &flock->cohesion, 0.0f, 3.0f);
+        ImGui::SliderFloat("Alignment", &flock->alignment, 0.0f, 1.0f);
+        ImGui::SliderFloat("Cohesion", &flock->cohesion, 0.0f, 1.0f);
         ImGui::SliderFloat("Visual Range", &flock->visualRange, 1.0f, 20.0f);
         ImGui::SliderFloat("FOV", &flock->fov, 30.0f, 360.0f);
 
