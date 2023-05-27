@@ -14,11 +14,14 @@ class Boid {
     ~Boid();
     void createVAO();
     glm::mat4 getModel();
+    void update(float deltaTime);
 
     unsigned int VAO, VBO;
     glm::vec3 pos;
     glm::vec3 vel;
     glm::vec3 color = glm::vec3(1.0f, 1.0f, 0.0f);
+    float minSpeed = 5;
+    float maxSpeed = 20;
 };
 
 #endif

@@ -74,3 +74,13 @@ void Boid::createVAO() {
     glVertexAttribPointer(1, 3, GL_FLOAT, GL_FALSE, 6 * sizeof(float), (void*)(3 * sizeof(float)));
     glEnableVertexAttribArray(1);
 }
+
+void Boid::update(float deltaTime) {
+	if (glm::length(vel) < minSpeed) {
+		vel = glm::normalize(vel) * minSpeed;
+	}
+	else if (glm::length(vel) > maxSpeed) {
+		vel = glm::normalize(vel) * maxSpeed;
+	}
+	pos += deltaTime * vel;
+}

@@ -39,6 +39,24 @@ void Flock::checkBorder(Boid *boid) {
     }
 }
 
+void Flock::chasePrey(Boid* boid, Prey* prey) {
+    if (prey->alive || prey->immortal) {
+        glm::vec3 v = prey->pos - boid->pos;
+        float distance = glm::length(v);
+        if (distance < 3) {
+            prey->alive = false;
+        }
+        boid->vel += chasefactor * glm::normalize(v) / distance;
+    }
+}
+
+bool Flock::visible(Boid *b1, Boid *b2) {
+    // return if b1 can see b2
+    glm::vec3 v = b2->pos - b1->pos;
+    return glm::length(v) < visualRange 
+        && glm::dot(glm::normalize(b1->vel), glm::normalize(v)) > glm::cos(glm::radians(fov / 2.0f));
+}
+
 void Flock::update(float deltaTime, Prey *prey) {
     for (int i = 0; i < n_boids; i++) {
         float n_neighbors = 0;
@@ -49,17 +67,13 @@ void Flock::update(float deltaTime, Prey *prey) {
         glm::vec3 avg_vel = glm::vec3(0, 0, 0);
         glm::vec3 avg_pos = glm::vec3(0, 0, 0);
         for (int j = 0; j < n_boids; j++) {
-            // boids[i]: center boid
-            // boids[j]: neighbor boid
             if (i == j) {
                 continue;
             }
-            glm::vec3 v = boids[j]->pos - boids[i]->pos;
-            float distance = glm::length(v);
-            if (distance < visualRange 
-                && glm::dot(glm::normalize(boids[i]->vel), glm::normalize(v)) > glm::cos(glm::radians(fov / 2.0f))) {
+            if (visible(boids[i], boids[j])) {
                 n_neighbors += 1;
                 // separation
+                float distance = glm::length(boids[i]->pos - boids[j]->pos);
                 avoid_vel += glm::normalize(boids[i]->pos - boids[j]->pos) / distance;
                 // alignment
                 avg_vel += boids[j]->vel;
@@ -77,29 +91,15 @@ void Flock::update(float deltaTime, Prey *prey) {
             avg_pos /= n_neighbors;
             c_vel = avg_pos - boids[i]->pos;
         }
-
         boids[i]->vel += separation * s_vel + alignment * a_vel + cohesion * c_vel;
 
         // chase prey
-        if (prey->alive || prey->immortal) {
-            glm::vec3 v = prey->pos - boids[i]->pos;
-            float distance = glm::length(v);
-            if (distance < 3) {
-                prey->alive = false;
-            }
-            boids[i]->vel += chasefactor * glm::normalize(v) / distance;
-        }
+        chasePrey(boids[i], prey);
 
         // check border
         checkBorder(boids[i]);
 
         // update vel and pos
-        if (glm::length(boids[i]->vel) < minSpeed) {
-            boids[i]->vel = glm::normalize(boids[i]->vel) * minSpeed;
-        }
-        else if (glm::length(boids[i]->vel) > maxSpeed) {
-            boids[i]->vel = glm::normalize(boids[i]->vel) * maxSpeed;
-        }
-        boids[i]->pos += deltaTime * boids[i]->vel;
+        boids[i]->update(deltaTime);
     }
 }
