@@ -14,6 +14,7 @@ class Flock {
     float turnfactor = 0.2;
     float chasefactor = 5;
     float visualRange = 5;
+    float fov = 240;
     float x_min, x_max;
     float y_min, y_max;
     float z_min, z_max;

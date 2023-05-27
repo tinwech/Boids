@@ -57,7 +57,7 @@ void Flock::update(float deltaTime, Prey *prey) {
             glm::vec3 v = boids[j]->pos - boids[i]->pos;
             float distance = glm::length(v);
             if (distance < visualRange 
-                && glm::dot(glm::normalize(boids[i]->vel), glm::normalize(v)) > -0.5) {
+                && glm::dot(glm::normalize(boids[i]->vel), glm::normalize(v)) > glm::cos(glm::radians(fov / 2.0f))) {
                 n_neighbors += 1;
                 // separation
                 avoid_vel += glm::normalize(boids[i]->pos - boids[j]->pos) / distance;
