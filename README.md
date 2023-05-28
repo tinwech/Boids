@@ -1,5 +1,6 @@
-# OpenGL Project Template
-This repository is a quick setup for an OpenGL project, including a Phong shader and a textured cat model.
+# Boids Simulation
+
+This project is a Boids simulation implemented in C++ using the OpenGL library. The simulation demonstrates the flocking behavior of birds and other animals based on the principles of emergent behavior and local interactions.
 
 ## For Windows
 
@@ -24,8 +25,7 @@ sudo apt-get install libglm-dev -y
 ### Build
 
 ```
-mkdir build
-cd build
+mkdir build && cd build
 cmake ..
 make
 ```
@@ -33,5 +33,5 @@ make
 ### Run
 
 ```
-./build/boids
+./boids
 ```
