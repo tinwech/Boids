@@ -1,5 +1,6 @@
 #include "flock.h"
 #include <iostream>
+#include <algorithm>
 
 Flock::Flock(int n_boids, float sx, float sy, float sz) : 
     n_boids(n_boids),
@@ -66,19 +67,10 @@ void Flock::avoidObstacles(Boid *boid, std::vector<Obstacle*> &obstacles) {
     boid->vel += avoidfactor * avoid_vel;
 }
 
-bool Flock::visible(Boid *boid, Obstacle *obstacle) {
-    glm::vec3 v = obstacle->pos - boid->pos;
-    return glm::length(v) - obstacle->size / 2 < visualRange 
-        && glm::dot(glm::normalize(boid->vel), glm::normalize(v)) > glm::cos(glm::radians(fov / 2.0f));
-}
-
-bool Flock::visible(Boid *boid, Boid *neighbor) {
-    glm::vec3 v = neighbor->pos - boid->pos;
-    return glm::length(v) < visualRange 
-        && glm::dot(glm::normalize(boid->vel), glm::normalize(v)) > glm::cos(glm::radians(fov / 2.0f));
-}
-
 void Flock::update(float deltaTime, Prey *prey, std::vector<Obstacle*> &obstacles) {
+    KDTree tree;
+    tree.buildKDTree(boids);
+
     for (int i = 0; i < n_boids; i++) {
         float n_neighbors = 0;
         glm::vec3 s_vel = glm::vec3(0, 0, 0);
@@ -87,21 +79,21 @@ void Flock::update(float deltaTime, Prey *prey, std::vector<Obstacle*> &obstacle
         glm::vec3 avoid_vel = glm::vec3(0, 0, 0);
         glm::vec3 avg_vel = glm::vec3(0, 0, 0);
         glm::vec3 avg_pos = glm::vec3(0, 0, 0);
-        for (int j = 0; j < n_boids; j++) {
-            if (i == j) {
-                continue;
-            }
-            if (visible(boids[i], boids[j])) {
-                n_neighbors += 1;
-                // separation
-                float distance = glm::length(boids[i]->pos - boids[j]->pos);
-                avoid_vel += glm::normalize(boids[i]->pos - boids[j]->pos) / distance;
-                // alignment
-                avg_vel += boids[j]->vel;
-                // cohesion
-                avg_pos += boids[j]->pos;
-            } 
+
+        std::vector<Boid*> neighbors;
+        tree.searchNeighbors(boids[i], visualRange, neighbors);
+        n_neighbors = neighbors.size();
+        for (int j = 0; j < n_neighbors; j++) {
+            float distance = glm::length(boids[i]->pos - neighbors[j]->pos);
+            // separation
+            if(distance > 0.01)
+                avoid_vel += glm::normalize(boids[i]->pos - neighbors[j]->pos) / distance;
+            // alignment
+            avg_vel += neighbors[j]->vel;
+            // cohesion
+            avg_pos += neighbors[j]->pos;
         }
+
         if (n_neighbors > 0) {
             // separation
             s_vel = avoid_vel / n_neighbors;

@@ -1,4 +1,5 @@
 #include "boid.h"
+#include "KDTree.h"
 #include "prey.h"
 #include "obstacle.h"
 #include <vector>
