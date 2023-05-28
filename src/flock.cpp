@@ -67,6 +67,18 @@ void Flock::avoidObstacles(Boid *boid, std::vector<Obstacle*> &obstacles) {
     boid->vel += avoidfactor * avoid_vel;
 }
 
+bool Flock::visible(Boid *boid, Obstacle *obstacle) {
+    glm::vec3 v = obstacle->pos - boid->pos;
+    return glm::length(v) - obstacle->size / 2 < visualRange 
+        && glm::dot(glm::normalize(boid->vel), glm::normalize(v)) > glm::cos(glm::radians(fov / 2.0f));
+}
+
+bool Flock::visible(Boid *boid, Boid *neighbor) {
+    glm::vec3 v = neighbor->pos - boid->pos;
+    return glm::length(v) < visualRange 
+        && glm::dot(glm::normalize(boid->vel), glm::normalize(v)) > glm::cos(glm::radians(fov / 2.0f));
+}
+
 void Flock::update(float deltaTime, Prey *prey, std::vector<Obstacle*> &obstacles) {
     KDTree tree;
     tree.buildKDTree(boids);
