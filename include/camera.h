@@ -2,7 +2,6 @@
 #define CAMERA_H
 
 #include <glad/glad.h>
-#include "boid.h"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
 
@@ -23,6 +22,7 @@ const float SPEED       =  2.5f;
 const float SENSITIVITY =  0.1f;
 const float ZOOM        =  45.0f;
 
+
 // An abstract camera class that processes input and calculates the corresponding Euler Angles, Vectors and Matrices for use in OpenGL
 class Camera
 {
@@ -40,9 +40,6 @@ public:
     float MovementSpeed;
     float MouseSensitivity;
     float Zoom;
-    int sight = 3;
-    float first_person_zoom_in = 30.0f;
-
 
     // constructor with vectors
     Camera(glm::vec3 position = glm::vec3(0.0f, 0.0f, 0.0f), glm::vec3 up = glm::vec3(0.0f, 1.0f, 0.0f), float yaw = YAW, float pitch = PITCH) : MovementSpeed(SPEED), MouseSensitivity(SENSITIVITY), Zoom(ZOOM)
@@ -110,35 +107,11 @@ public:
     // processes input received from a mouse scroll-wheel event. Only requires input on the vertical wheel-axis
     void ProcessMouseScroll(float yoffset)
     {
-        if(sight == 1)
-        {
-            first_person_zoom_in -= (float)yoffset;
-            if (first_person_zoom_in < 1.0f)
-                first_person_zoom_in = 1.0f;
-            if (first_person_zoom_in > 45.0f)
-                first_person_zoom_in = 45.0f;
-        }
-        else
-        {
-            Zoom -= (float)yoffset;
-            if (Zoom < 1.0f)
-                Zoom = 1.0f;
-            if (Zoom > 45.0f)
-                Zoom = 45.0f;
-        }
-        
-    }
-
-    void update(Boid* boid)
-    {
-        auto vel_norm = glm::normalize(boid->vel);
-        Position = boid->pos - first_person_zoom_in * vel_norm;
-
-        glm::vec3 target = boid->pos + boid->vel;
-        Front = glm::normalize(target - Position);
-        Right = glm::normalize(glm::cross(Front, glm::vec3(0, 1, 0)));
-        Up = glm::normalize(glm::cross(Right, Front));
-
+        Zoom -= (float)yoffset;
+        if (Zoom < 1.0f)
+            Zoom = 1.0f;
+        if (Zoom > 45.0f)
+            Zoom = 45.0f;
     }
 
 private:

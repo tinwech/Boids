@@ -85,9 +85,6 @@ int main()
 		float fps = 1.0f / deltaTime;
 
 		flock->update(deltaTime, prey, arena->obstacles);
-		if(camera.sight == 1)
-			camera.update(flock->boids[0]);
-
 		prey->update();
 
 		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)windowWidth / (float)windowHeight, 0.1f, 200.0f);
@@ -179,26 +176,6 @@ void mainPanel(float fps, Arena* arena, Flock* flock, Prey* prey) {
 		ImGui::Checkbox("Visualize", &arena->visualize);
     }
     ImGui::End();
-
-	if (ImGui::Begin("Camera")) {
-		if(camera.sight == 3)
-		{
-			if(ImGui::Button("3rd"))
-			{
-				camera.sight = 1;
-			}
-			
-		}
-		else
-		{
-			if(ImGui::Button("1st"))
-			{
-				camera = Camera(glm::vec3(80.0f, 0.0f, 80.0f));
-				camera.sight = 3;
-			}
-		}
-    }
-    ImGui::End();
 }
 
 void renderUI(GLFWwindow* window, float fps, Arena* arena, Flock* flock, Prey* prey) {
@@ -233,7 +210,7 @@ GLFWwindow* init() {
 	glfwSetKeyCallback(window, keyCallback);
 	glfwSetMouseButtonCallback(window, mouse_button_callback);
 	glfwSetCursorPosCallback(window, mouse_callback);
-	glfwSetScrollCallback(window, scroll_callback);
+	// glfwSetScrollCallback(window, scroll_callback);
 	glfwSwapInterval(1);
 
 	// Init GLAD
