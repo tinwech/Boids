@@ -165,7 +165,6 @@ void mainPanel(float fps, Arena* arena, Flock* flock, Prey* prey) {
         ImGui::SliderFloat("Alignment", &flock->alignment, 0.0f, 1.0f);
         ImGui::SliderFloat("Cohesion", &flock->cohesion, 0.0f, 1.0f);
         ImGui::SliderFloat("Visual Range", &flock->visualRange, 1.0f, 20.0f);
-        ImGui::SliderFloat("FOV", &flock->fov, 30.0f, 360.0f);
 
 		// Prey parameters
         ImGui::Text("Prey");
@@ -177,22 +176,16 @@ void mainPanel(float fps, Arena* arena, Flock* flock, Prey* prey) {
 		// Arena
         ImGui::Text("Arena");
 		ImGui::Checkbox("Visualize", &arena->visualize);
-    }
-    ImGui::End();
 
-	if (ImGui::Begin("Camera")) {
-		if(camera.sight == 3)
-		{
-			if(ImGui::Button("3rd"))
-			{
+		// Camera
+        ImGui::Text("Camera");
+		if(camera.sight == 3) {
+			if(ImGui::Button("3rd")) {
 				camera.sight = 1;
 			}
-			
 		}
-		else
-		{
-			if(ImGui::Button("1st"))
-			{
+		else {
+			if(ImGui::Button("1st")) {
 				camera = Camera(glm::vec3(80.0f, 0.0f, 80.0f));
 				camera.sight = 3;
 			}
