@@ -50,6 +50,9 @@ float lastFrame = 0.0f;
 Material material;
 Light light;
 
+bool isPause = false;
+int isStep = 0;
+
 int main()
 {
 	// Initialization
@@ -76,22 +79,28 @@ int main()
 	// Display loop
 	while (!glfwWindowShouldClose(window))
 	{
+		if(isStep > 0)
+			isPause = false;
+
 		glClearColor(0.2f, 0.2f, 0.2f, 0.0f);
 		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
+
 		float currentFrame = static_cast<float>(glfwGetTime());
-        deltaTime = currentFrame - lastFrame;
-        lastFrame = currentFrame;
+		deltaTime = currentFrame - lastFrame;
+		lastFrame = currentFrame;
 		float fps = 1.0f / deltaTime;
 
-		flock->update(deltaTime, prey, arena->obstacles);
-		if(camera.sight == 1)
-			camera.update(flock->boids[0]);
+		if(!isPause)
+		{
+			flock->update(deltaTime, prey, arena->obstacles);
+			if(camera.sight == 1)
+				camera.update(flock->boids[0]);
 
-		prey->update();
-
-		glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)windowWidth / (float)windowHeight, 0.1f, 200.0f);
-        glm::mat4 view = camera.GetViewMatrix();
+			prey->update();
+		}
+			glm::mat4 projection = glm::perspective(glm::radians(camera.Zoom), (float)windowWidth / (float)windowHeight, 0.1f, 200.0f);
+			glm::mat4 view = camera.GetViewMatrix();
 
 		// Draw boids
 		glCullFace(GL_BACK);
@@ -144,6 +153,12 @@ int main()
 
 		glfwSwapBuffers(window);
 		glfwPollEvents();
+
+		if(isStep > 0)
+		{
+			isPause = true;
+			isStep--;
+		}
 	}
 
 	glfwTerminate();
@@ -190,6 +205,29 @@ void mainPanel(float fps, Arena* arena, Flock* flock, Prey* prey) {
 				camera.sight = 3;
 			}
 		}
+
+		ImGui::Text("Control");
+		if(isPause)
+		{
+			if(ImGui::Button("Pause"))
+			{
+				isPause = false;
+				isStep = 0;
+			}
+			if(ImGui::Button("Step"))
+			{
+				isStep = 100;
+			}
+		}
+		else
+		{
+			if(ImGui::Button("Resume"))
+			{
+				isPause = true;
+				isStep = 0;
+			}
+		}
+
     }
     ImGui::End();
 }
